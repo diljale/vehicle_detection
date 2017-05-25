@@ -1,15 +1,9 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
----
-
 **Vehicle Detection Project**
 
 The goals / steps of this project are the following:
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
 * Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
@@ -21,7 +15,8 @@ The goals / steps of this project are the following:
 [image4]: ./examples/sliding_window.jpg
 [image5]: ./examples/bboxes_and_heat.png
 [image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+[image7]: ./examples/output_bbboxes.jpg
+[image8]: ./examples/normalized-features
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -38,13 +33,13 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the second code cell of the IPython notebook example.ipynb  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
 ![alt text][image1]
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`). I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
@@ -53,23 +48,25 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I tried RGB, HSV, LUV and YCrCb color space. I also experimented with extracting HOG feature from single channel vs ALL channels. I changed other HOG parameters like pixels_per_cell and cells_per_block. I randomly selected 500 images and split them into test and train test. I then experimented with different paramerts and colro space and added histogram and spatial binning to figure out best combination. I then tried set of combinations that gave good result on full training set. I selected parameters which provided best accuracy on test set.
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features and color features.
 
-I trained a linear SVM using...
+I trained a linear SVM using HOG, histogram and spatial binning features in YCrCb color space. The code the same in 3rd code cell in IPython notebook. I used train_test_split and shuffle functions to randomize data and split it into test and training sets. I also normalized features.
+
+![alt text][image8]
 
 ###Sliding Window Search
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+I started with experimenting on different window sizes from 32 to 256 in steps of 32 on test images. I also tried variable combinatio from 32 to 96 in variable steps of 12,16, 24. Evetually i fou dwindow sizes which gave best result. These were 64 to 160 in steps of 32. I also experimented with overlap values and saw 0.8 giving best results.
 
 ![alt text][image3]
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+####2. Show some examples of test images to demonstrate how your pipeline is working.
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I reduced region of search by experimenting with x_start, x_stop, y_start, y_stop values, which provided a nice result.  Here are some example images:
 
 ![alt text][image4]
 ---
@@ -104,5 +101,6 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
-
+I think manually choosing paramerts is tedious job, and i would consider deep learning techniques for vehicle detection if i have to do this again.
+Since my pipeline uses hand chosen features on small dataset, it may not generalize to light conditions and vehicle colors.
+I haven't added any logic to track detected vehicle. It would be nice to implement kalman filter to track detected vehicle even when it is occluded. 
